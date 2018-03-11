@@ -1,0 +1,10 @@
+.search-bar {
+    position: fixed; /* or absolute */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.search-field {
+    width: 400px;
+}
