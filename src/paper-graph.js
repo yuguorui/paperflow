@@ -643,30 +643,32 @@ class PaperGraph extends Component {
         let citation_queue = [root];
         while (citation_queue.length) {
             let n = citation_queue.shift();
+            let req_queue = [];
             if (n.depth === maxDepth) continue;
             for (let i = 0; i < n.citations.length; i++) {
                 if (n.citations[i].paperId in this.papers) continue;
-                let req_queque = [];
+
                 if ((await PaperGraph.is_important_citation(n.citations[i])) === true) {
-                    req_queque.push(PaperGraph.fetchPaper(n.citations[i].paperId));
+                    req_queue.push(PaperGraph.fetchPaper(n.citations[i].paperId));
                 }
-                for (let i = 0; i < req_queque.length; i++) {
-                    let new_n = await req_queque[i];
-                    new_n.depth = n.depth + 1;
-                    edges.push({from: n.paperId, to: new_n.paperId});
-                    if (PaperGraph.isInCCFList(new_n.venue)) {
-                        nodes.push({
-                            id: new_n.paperId,
-                            label: new_n.title + ', <' + new_n.venue + '>',
-                            color: '#deb959'
-                        });
-                    }
-                    else {
-                        nodes.push({id: new_n.paperId, label: new_n.title + ', <' + new_n.venue + '>'});
-                    }
-                    this.papers[new_n.paperId] = new_n;
-                    citation_queue.push(new_n);
+            }
+
+            for (let i = 0; i < req_queue.length; i++) {
+                let new_n = await req_queue[i];
+                new_n.depth = n.depth + 1;
+                edges.push({from: n.paperId, to: new_n.paperId});
+                if (PaperGraph.isInCCFList(new_n.venue)) {
+                    nodes.push({
+                        id: new_n.paperId,
+                        label: new_n.title + ', <' + new_n.venue + '>',
+                        color: '#deb959'
+                    });
                 }
+                else {
+                    nodes.push({id: new_n.paperId, label: new_n.title + ', <' + new_n.venue + '>'});
+                }
+                this.papers[new_n.paperId] = new_n;
+                citation_queue.push(new_n);
             }
         }
 
@@ -674,35 +676,37 @@ class PaperGraph extends Component {
         let reference_queue = [root];
         while (reference_queue.length) {
             let n = reference_queue.shift();
+            let req_queue = [];
             if (n.depth === maxDepth) continue;
             for (let i = 0; i < n.references.length; i++) {
                 if (n.references[i].paperId in this.papers) continue;
-                if (PaperGraph.is_important_reference(n.references[i])) {
-                    let new_n = await
-                        PaperGraph.fetchPaper(n.references[i].paperId);
-                    new_n.depth = n.depth + 1;
 
-                    edges.push({to: n.paperId, from: new_n.paperId});
-                    if (PaperGraph.isInCCFList(new_n.venue)) {
-                        nodes.push({
-                            id: new_n.paperId,
-                            label: new_n.title + ', <' + new_n.venue + '>',
-                            color: '#deb959'
-                        });
-                    }
-                    else {
-                        nodes.push({id: new_n.paperId, label: new_n.title + ', <' + new_n.venue + '>'});
-                    }
-                    this.papers[new_n.paperId] = new_n;
-                    reference_queue.push(new_n);
+                if (await PaperGraph.is_important_reference(n.references[i])) {
+                    req_queue.push(PaperGraph.fetchPaper(n.references[i].paperId));
                 }
+            }
+
+            for (let i = 0; i < req_queue.length; i++) {
+                let new_n = await req_queue[i];
+                new_n.depth = n.depth + 1;
+
+                edges.push({to: n.paperId, from: new_n.paperId});
+                if (PaperGraph.isInCCFList(new_n.venue)) {
+                    nodes.push({
+                        id: new_n.paperId,
+                        label: new_n.title + ', <' + new_n.venue + '>',
+                        color: '#deb959'
+                    });
+                }
+                else {
+                    nodes.push({id: new_n.paperId, label: new_n.title + ', <' + new_n.venue + '>'});
+                }
+                this.papers[new_n.paperId] = new_n;
+                reference_queue.push(new_n);
             }
         }
         for (let i = 0; i < nodes.length; i++) {
             nodes[i].widthConstraint = {maximum: 200};
-        }
-        for (let i = 0; i < edges.length; i++) {
-            edges[i].id = 'e' + i;
         }
         return {nodes: nodes, edges: edges};
     }
