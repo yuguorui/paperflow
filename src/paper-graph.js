@@ -78,11 +78,13 @@ class PaperGraph extends Component {
             if (n.depth === maxDepth) continue;
             for (let i = 0; i < n.citations.length; i++) {
                 if (n.citations[i].paperId in this.papers) continue;
+                let req_queque = [];
                 if (PaperGraph.is_important_citation(n.citations[i])) {
-                    let new_n = await
-                        PaperGraph.fetchPaper(n.citations[i].paperId);
+                    req_queque.push(PaperGraph.fetchPaper(n.citations[i].paperId));
+                }
+                for (let i = 0; i < req_queque.length; i++) {
+                    let new_n = await req_queque[i];
                     new_n.depth = n.depth + 1;
-
                     edges.push({from: n.paperId, to: new_n.paperId});
                     nodes.push({id: new_n.paperId, label: new_n.title});
                     this.papers[new_n.paperId] = new_n;
