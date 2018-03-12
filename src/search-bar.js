@@ -17,7 +17,7 @@ class SearchBar extends Component {
     render() {
         return (
             <div className='search-bar' onKeyDown={this.onKeyDown}>
-                <TextField autoFocus className='search-field' id="search-field" placeholder="Paper DOI in here."
+                <TextField autoFocus className='search-field' id="search-field" placeholder="Paper S2PaperId/DOI/arXivId in here."
                            margin="normal"/>
                 <Button variant="raised" color='primary' size='small' onClick={SearchBar.buttonClicked}>Search</Button>
             </div>
